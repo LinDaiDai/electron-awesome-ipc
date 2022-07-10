@@ -1,0 +1,43 @@
+{
+  "name": "electron-awesome-ipc",
+  "private": true,
+  "version": "0.0.0",
+  "main": "dist/main/index.js",
+  "scripts": {
+    "dev": "npm run dev:all",
+    "dev:all": "concurrently -n=render,main,preload -c=green,blue,yellow \"npm run dev:render\" \"npm run dev:main\" \"npm run dev:preload\"",
+    "dev:render": "vite",
+    "dev:main": "node -r ts-node/register script/build-main --mode=development",
+    "dev:preload": "node -r ts-node/register script/build-preload --mode=development",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
+  },
+  "devDependencies": {
+    "@rollup/plugin-alias": "^3.1.9",
+    "@rollup/plugin-commonjs": "^22.0.1",
+    "@rollup/plugin-json": "^4.1.0",
+    "@rollup/plugin-node-resolve": "^13.3.0",
+    "@rollup/plugin-url": "^7.0.0",
+    "@types/minimist": "^1.2.2",
+    "@types/node": "^18.0.0",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "@vitejs/plugin-react": "^1.3.0",
+    "chalk": "^4.1.0",
+    "concurrently": "^7.2.2",
+    "electron": "13.6.7",
+    "minimist": "^1.2.6",
+    "nanoid": "^4.0.0",
+    "ora": "^5.4.0",
+    "rollup": "^2.75.7",
+    "rollup-plugin-typescript2": "^0.32.1",
+    "rollup-plugin-uglify": "^6.0.4",
+    "ts-node": "^10.8.2",
+    "typescript": "^4.6.3",
+    "vite": "^2.9.9"
+  }
+}
