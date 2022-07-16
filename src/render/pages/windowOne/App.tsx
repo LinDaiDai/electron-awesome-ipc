@@ -1,24 +1,18 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import './index.css';
+import TestIpc from './TestIpc';
 
 function App() {
-  const sendMessageToWindowTwo = () => {
-    // window.lindaidai.ipc.send('window-one-to-winow-two', 'window-one-to-winow-two');
-  }
-  const sendMessageToMain = () => {
-    window.lindaidai.ipc?.send('render-to-main', 'render-to-main');
-  }
+  const [isDestoryTestIpc, setIsDestoryTestIpc] = useState<boolean>(false);
 
-  useEffect(() => {
-    window.lindaidai.ipc?.on('test.ipc', () => {
-      console.log('-----test');
-    });
-  }, []);
+  const toggleShowTestIpc = () => {
+    setIsDestoryTestIpc(!isDestoryTestIpc);
+  }
 
   return <div className='container'>
-    <h1>窗口1</h1>
-    <button onClick={sendMessageToWindowTwo}>点击发送消息给窗口2</button>
-    <button onClick={sendMessageToMain}>点击发送消息给主进程</button>
+    <h1>WindowOne</h1>
+    <button onClick={toggleShowTestIpc}>destory TestIpc Component</button>
+    {!isDestoryTestIpc && <TestIpc /> }
   </div>
 }
 

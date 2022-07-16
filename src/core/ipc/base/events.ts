@@ -10,7 +10,7 @@ import {
 
 export default class IpcEventEmitter implements IIpcEventEmitter {
   public listenerMap: IIpcEventEmitterListenerMap = {};
-  public eventEmitter: any = new Event();
+  public eventEmitter: typeof Event = new Event();
 
   public emit = (channel: string, message: IIpcMessage): void => {
     this.eventEmitter.emit(channel, message);

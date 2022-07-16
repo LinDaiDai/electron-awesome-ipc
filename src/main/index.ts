@@ -1,6 +1,7 @@
 import { app, BrowserWindow } from 'electron'
 import { createWindow } from './windowCenter/createWindow';
 import setup from './setup';
+import { testIpc } from './test';
 
 function createWindowOne() {
   createWindow({
@@ -22,7 +23,7 @@ app.whenReady().then(() => {
   setup()
   createWindowOne()
   createWindowTwo()
-  setIpcListener()
+  testIpc()
 })
 
 app.on('window-all-closed', () => {
@@ -37,10 +38,3 @@ app.on('activate', () => {
     createWindowTwo()
   }
 })
-
-const setIpcListener = () => {
-  const handleIpcMessage = (e, data) => {
-    console.log('main handleIpcMessage', data);
-  }
-  // global.lindaidai.ipc.on('render-to-main', handleIpcMessage)
-}

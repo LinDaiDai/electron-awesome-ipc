@@ -39,6 +39,18 @@ export interface IRequestResponse {
 
 export interface IIpcMessageCtx extends IIpcMessage {
   request: {
-    resolve: (result: any) => void;
+    resolve: (result?: any) => void;
   };
+}
+
+export interface IRenderProvidePortMsg {
+  processKeys: string[];
+}
+
+export interface IAddPortMsg {
+  processKey: string;
+}
+
+export interface IRemovePortMsg {
+  processKey: string;
 }

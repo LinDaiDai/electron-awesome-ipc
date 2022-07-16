@@ -1,5 +1,9 @@
 export * from './channel';
 export * from './base';
+export * from './events';
+
+import { IIpcMessageCtx } from './channel';
+import { IIpcEventEmitter } from './events';
 
 export enum EIpcNamespace {
   Main = 'Main',
@@ -14,10 +18,11 @@ export interface IBaseIpc {
    * 命名空间
    */
   namespace: EIpcNamespace;
+  processKey: TProcessKey;
   /**
    * 事件处理对象，用于处理进程内部自己的消息
    */
-  eventEmitter: any;
+  eventEmitter: IIpcEventEmitter;
   /**
    * 各个进程的 port 的集合
    */
@@ -33,11 +38,23 @@ export interface IBaseIpc {
    /**
     * 请求消息
     */
-  // request: (channel: string, timeout?: number | 'infinite', args?: any) => Promise<any>;
+  request: (channel: string, timeout?: number | 'infinite', args?: any) => Promise<any>;
    /**
     * 绑定事件
     */
   on: (channel: string, handler: TPortChannelHandler | IPortChannelCallback, once?: boolean) => void;
+  /**
+   * 绑定一次事件
+   */
+  once: (channel: string, handler: TPortChannelHandler | IPortChannelCallback) => void;
+   /**
+    * 解除绑定事件
+    */
+  off: (channel: string, handler?: Function) => void;
+   /**
+    * 解除绑定事件
+    */
+  removeListener: (channel: string, handler?: Function) => void;
 }
 
 export type TProcessKey = string | number;
@@ -50,6 +67,7 @@ export interface IProcessMessagePortMap {
 export interface IProcessMessagePortMapItem {
   processKey: TProcessKey;
   messagePort: TMessagePort;
+  webContents?: Electron.WebContents;
 }
 
 export interface IPortChannelMap {
@@ -79,7 +97,7 @@ export interface IPortChannelCallback {
   target?: string;
 }
 
-export type TPortChannelHandler = (ctx: any, body: any) => void;
+export type TPortChannelHandler = (ctx: IIpcMessageCtx, body: any) => void;
 
 export interface IMainIpc extends IBaseIpc {}
 

@@ -1,11 +1,12 @@
 const { ipcMain, MessageChannelMain } = require('electron');
 import BaseIpc from './base';
-import { IMainIpc, EIpcNamespace, TProcessKey, TMessagePort, IIpcMessage, IRequestResponse } from './typings';
+import { IMainIpc, EIpcNamespace, TProcessKey, TMessagePort, IIpcMessage, IRequestResponse, IRemovePortMsg, IProcessMessagePortMapItem } from './typings';
 import { getRenderProcessKey } from './utils';
-import { CHANNEL_RENDER_REGISTER, CHANNEL_RENDER_ADD_PORT, CHANNEL_MESSAGE, CHANNEL_REQUEST } from './constants';
+import { CHANNEL_RENDER_REGISTER, CHANNEL_RENDER_ADD_PORT, CHANNEL_MESSAGE, CHANNEL_REQUEST, CHANNEL_RENDER_REMOVTE_PORT, CHANNEL_RENDER_PROVIDE_PORT, PROCESS_KEY_MAIN } from './constants';
 
 class MainIpc extends BaseIpc implements IMainIpc {
   public namespace = EIpcNamespace.Main;
+  public processKey: TProcessKey = PROCESS_KEY_MAIN;
   constructor() {
     super();
     this.init();
@@ -20,21 +21,22 @@ class MainIpc extends BaseIpc implements IMainIpc {
    */
   private _addIpcRenderRegisteredListener = (): void => {
     ipcMain.on(CHANNEL_RENDER_REGISTER, (ipcMainEvent: Electron.IpcMainEvent) => {
-      console.log(CHANNEL_RENDER_REGISTER, ipcMainEvent);
-      // 2、获取到 port1
+      console.log(CHANNEL_RENDER_REGISTER);
       const [port] = ipcMainEvent.ports;
-      const renderSender = ipcMainEvent.sender;
-      const processKey = this._registerProcessIpcPort(renderSender, port);
+      const webContents = ipcMainEvent.sender;
+      const processKey = this._registerProcessIpcPort(webContents, port);
       this._mainProcessAddlistenerProcessMessage(processKey);
       this._allRenderProcessAddlistenerProcessMessage(processKey);
+      this._addListenerPortClose(processKey);
     });
   };
 
-  private _registerProcessIpcPort = (renderSender: Electron.webContents, messagePort: TMessagePort): TProcessKey => {
-    const processKey = getRenderProcessKey(renderSender, this.processMessagePortMap);
+  private _registerProcessIpcPort = (webContents: Electron.webContents, messagePort: TMessagePort): TProcessKey => {
+    const processKey = getRenderProcessKey(webContents, this.processMessagePortMap);
     this.processMessagePortMap[processKey] = {
       processKey,
       messagePort,
+      webContents,
     }
     return processKey;
   };
@@ -56,15 +58,34 @@ class MainIpc extends BaseIpc implements IMainIpc {
   };
 
   private _allRenderProcessAddlistenerProcessMessage = (processKey: TProcessKey): void => {
-    for (const [key, processMessagePort] of Object.entries(this.processMessagePortMap)) {
-      const { port1, port2 } = new MessageChannelMain();
+    const newProcessWillProviedProcessKeys: TProcessKey[] = [];
+    const newProcessWillProvidePorts: TMessagePort[] = [];
+    console.log('_allRenderProcessAddlistenerProcessMessage');
+    for (const processMessagePort of Object.values(this.processMessagePortMap)) {
+      const key = processMessagePort.processKey;
       if (processKey !== key) {
-        processMessagePort.messagePort.postMessage(CHANNEL_RENDER_ADD_PORT, [port1]);
-      } else {
-        this.processMessagePortMap[processKey].messagePort.postMessage(CHANNEL_RENDER_ADD_PORT, [port2]);
+        const { port1, port2 } = new MessageChannelMain();
+        processMessagePort.webContents?.postMessage(CHANNEL_RENDER_ADD_PORT, { processKey }, [port1]);
+        newProcessWillProviedProcessKeys.push(key);
+        newProcessWillProvidePorts.push(port2);
       }
     }
+    if (newProcessWillProviedProcessKeys.length > 0) {
+      this.processMessagePortMap[processKey].webContents?.postMessage(CHANNEL_RENDER_PROVIDE_PORT, { processKeys: newProcessWillProviedProcessKeys }, newProcessWillProvidePorts);
+    }
   };
+
+  private _addListenerPortClose = (processKey: TProcessKey): void => {
+    this.processMessagePortMap[processKey].messagePort.on('close', () => {
+      console.log('port will be close', processKey);
+      this._removeProcessMessagePort(processKey);
+    });
+  };
+
+  private _removeProcessMessagePort = (processKey: TProcessKey): void => {
+    delete this.processMessagePortMap[processKey];
+    this.send(CHANNEL_RENDER_REMOVTE_PORT, { processKey } as IRemovePortMsg);
+  }
 }
 
 export default MainIpc;

@@ -1,18 +1,18 @@
-import React, { useEffect } from 'react';
+import React, { useState } from 'react';
 import './index.css';
+import TestIpc from './TestIpc';
 
 function App() {
-  const handleIpcMessage = (e, data) => {
-    console.log('handleIpcMessage', data);
+  const [isDestoryTestIpc, setIsDestoryTestIpc] = useState<boolean>(false);
+
+  const toggleShowTestIpc = () => {
+    setIsDestoryTestIpc(!isDestoryTestIpc);
   }
-  useEffect(() => {
-    // window.lindaidai.ipc.on('window-one-to-winow-two', handleIpcMessage)
-    return () => {
-      // window.lindaidai.ipc.off('window-one-to-winow-two', handleIpcMessage)
-    }
-  }, [])
+
   return <div className='container'>
-    <h1>窗口2</h1>
+    <h1>WindowTwo</h1>
+    <button onClick={toggleShowTestIpc}>destory TestIpc Component</button>
+    {!isDestoryTestIpc && <TestIpc /> }
   </div>
 }
 

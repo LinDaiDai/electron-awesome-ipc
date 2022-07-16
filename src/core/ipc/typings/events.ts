@@ -4,6 +4,8 @@ import { IIpcMessage, IPortChannelCallback } from './index';
  * 用于处理同一进程中的 ipc 通信
  */
 export interface IIpcEventEmitter {
+  listenerMap: IIpcEventEmitterListenerMap;
+  eventEmitter: typeof Event;
   emit: (channel: string, message: IIpcMessage) => void;
   on: (channel: string, messageListener: IPortChannelCallback) => void;
   removeListener: (channel: string, handler?: Function) => void;
