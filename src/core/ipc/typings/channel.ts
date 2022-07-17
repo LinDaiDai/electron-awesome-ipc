@@ -1,3 +1,5 @@
+import { TProcessKey } from "./index";
+
 export interface IIpcMessage {
   /**
    * 频道（事件名）
@@ -12,6 +14,7 @@ export interface IIpcMessage {
      */
     reqId: string;
   };
+  targetId?: TProcessKey;
   /**
    * 消息体
    */
@@ -44,13 +47,14 @@ export interface IIpcMessageCtx extends IIpcMessage {
 }
 
 export interface IRenderProvidePortMsg {
-  processKeys: string[];
+  processKeys: TProcessKey[];
+  processKey: TProcessKey;
 }
 
 export interface IAddPortMsg {
-  processKey: string;
+  processKey: TProcessKey;
 }
 
 export interface IRemovePortMsg {
-  processKey: string;
+  processKey: TProcessKey;
 }

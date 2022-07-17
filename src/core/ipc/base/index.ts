@@ -1,18 +1,8 @@
 import IpcEventEmitter from './events';
-import { IBaseIpc, EIpcNamespace, IProcessMessagePortMap, IPortChannelMap, IHandleMessageParams, IIpcMessage, IPortChannelCallback, TPortChannelHandler, IIpcEventEmitter, IRequestResponse, TProcessKey } from '../typings';
+import { IBaseIpc, IBaseIpcProps, IIpcLogger, EIpcNamespace, IProcessMessagePortMap, IPortChannelMap, IHandleMessageParams, IIpcMessage, IPortChannelCallback, TPortChannelHandler, IIpcEventEmitter, IRequestResponse, TProcessKey } from '../typings';
 import { CHANNEL_REQUEST } from '../constants';
 import { generateMessageCtx, generateIpcMessage } from '../utils';
 import { timeoutWrap } from '../utils/timeout';
-
-const handler = {
-  apply: function(target, thisArg, argumentsList) {
-    console.log('target', target);
-    console.log('thisArg', thisArg);
-    console.log('argArray', argumentsList);
-    var res = Reflect.apply(target, thisArg, argumentsList);
-    return res;
-  }
-};
 
 export default class BaseIpc implements IBaseIpc {
   public namespace = EIpcNamespace.Render;
@@ -21,6 +11,11 @@ export default class BaseIpc implements IBaseIpc {
   public eventEmitter: IIpcEventEmitter = new IpcEventEmitter();
   public init = (): void => {};
   public processKey: TProcessKey = '';
+  public logger: IIpcLogger = { info: console.log, error: console.error };
+
+  constructor(props: IBaseIpcProps) {
+    this._initLogger(props);
+  }
 
   /**
    * 1、遍历现在已有的所有 ipc，并使用他们的 port 发送消息
@@ -30,12 +25,12 @@ export default class BaseIpc implements IBaseIpc {
    */
   public send = (channel: string, args?: any) => {
     const finalMessage = generateIpcMessage(channel, args);
-    console.log('[send]', finalMessage);
+    this.logger.info('[send]', finalMessage);
     this._sendToPort(finalMessage);
     this.eventEmitter.emit(channel, finalMessage);
   };
 
-  private _on = (channel: string, handler: TPortChannelHandler | IPortChannelCallback, once?: boolean): void => {
+  public on = (channel: string, handler: TPortChannelHandler | IPortChannelCallback, once?: boolean): void => {
     if (!this.portChannelMap[channel]) {
       this.portChannelMap[channel] = {
         callbacks: [],
@@ -55,8 +50,6 @@ export default class BaseIpc implements IBaseIpc {
     this.portChannelMap[channel].callbacks.push(messageListener);
     this.eventEmitter.on(channel, messageListener);
   };
-
-  public on = new Proxy(this._on, handler);
 
   public once = (channel: string, handler: TPortChannelHandler | IPortChannelCallback): void => {
     this.on(channel, handler, true);
@@ -78,7 +71,7 @@ export default class BaseIpc implements IBaseIpc {
    */
    public request = async (channel: string, timeout?: number | 'infinite', args?: any): Promise<void> => {
     const finalMessage = generateIpcMessage(channel, args);
-    console.log('[request]', finalMessage);
+    this.logger.info('[request]', finalMessage);
     let _timeout = timeout;
     if (!_timeout) {
       _timeout = 15000;
@@ -94,7 +87,7 @@ export default class BaseIpc implements IBaseIpc {
         return res;
       },
       (error) => {
-        console.error(`channel: ${channel}, request is timeout: ${_timeout}ms, args: `, args);
+        this.logger.error(`channel: ${channel}, request is timeout: ${_timeout}ms, args: `, args);
         return error;
       },
     );
@@ -102,9 +95,34 @@ export default class BaseIpc implements IBaseIpc {
 
   public handleMessage = (params: IHandleMessageParams): void => {
     const { message } = params;
-    const { channel } = message;
+    const { channel, targetId } = message;
+
+    if ((targetId !== undefined || targetId !== null) && targetId !== this.processKey) {
+      this.logger.info(`the targetId is mismatch, channel is ${channel}, targetId:`, targetId, this.processKey);
+      return;
+    }
+
     if (this.portChannelMap[channel]?.callbacks) {
       this._executePortChannelCallbacks(params);
+    }
+  };
+
+  private _initLogger = (params: IBaseIpcProps): void => {
+    const { hasLog = true, logger } = params;
+
+    if (!hasLog) {
+      this.logger = {
+        info: () => {},
+        error: () => {},
+      }
+      return;
+    }
+
+    if (logger?.info) {
+      this.logger.info = logger.info;
+    }
+    if (logger?.error) {
+      this.logger.error = logger.error;
     }
   };
 
@@ -113,7 +131,7 @@ export default class BaseIpc implements IBaseIpc {
     return new Promise((resolve) => {
       this.once(CHANNEL_REQUEST, {
         handler: (ctx, result) => {
-          console.log('[request result], message is :', message, 'result is: ', result);
+          this.logger.info('[request result], message is :', message, 'result is: ', result);
           resolve(result);
         },
         reqId: headers.reqId,
@@ -163,7 +181,7 @@ export default class BaseIpc implements IBaseIpc {
       this._removeChannelCallback(channel, handler);
       handler && this.eventEmitter.removeListener(channel, handler);
     } else {
-      console.error(`non-existent channel[${channel}] need removeListener`);
+      this.logger.error(`non-existent channel[${channel}] need removeListener`);
     }
   };
 

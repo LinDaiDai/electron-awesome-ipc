@@ -1,13 +1,13 @@
 const { ipcRenderer } = require('electron');
 import BaseIpc from './base';
-import { EIpcNamespace, IRenderIpc, TProcessKey, TMessagePort, IRequestResponse, IIpcMessage, IRemovePortMsg, IRenderProvidePortMsg, IAddPortMsg } from './typings';
+import { EIpcNamespace, IBaseIpcProps, IRenderIpc, TProcessKey, TMessagePort, IRequestResponse, IIpcMessage, IRemovePortMsg, IRenderProvidePortMsg, IAddPortMsg } from './typings';
 import { CHANNEL_RENDER_REGISTER, CHANNEL_REQUEST, PROCESS_KEY_MAIN, CHANNEL_RENDER_REMOVTE_PORT, CHANNEL_RENDER_PROVIDE_PORT, CHANNEL_RENDER_ADD_PORT } from './constants';
 
 class RenderIpc extends BaseIpc implements IRenderIpc {
   public namespace = EIpcNamespace.Render;
   public processKey: TProcessKey = '';
-  constructor() {
-    super();
+  constructor(props: IBaseIpcProps) {
+    super(props);
     this.init();
   }
 
@@ -42,7 +42,7 @@ class RenderIpc extends BaseIpc implements IRenderIpc {
   private _addlistenerProcessMessage = (messagePort: TMessagePort): void => {
     messagePort.onmessage = (event: Electron.MessageEvent) => {
       const message: IIpcMessage = event.data;
-      console.log('[receive]', message);
+      this.logger.info('[receive]', message);
       const resolveHandle = (response: IRequestResponse): void => {
         messagePort.postMessage({
           channel: CHANNEL_REQUEST,
@@ -59,10 +59,12 @@ class RenderIpc extends BaseIpc implements IRenderIpc {
      * 并给他们设置监听
      */
      ipcRenderer.once(CHANNEL_RENDER_PROVIDE_PORT, (event: any, msg: IRenderProvidePortMsg) => {
-      const { processKeys } = msg;
+      const { processKeys, processKey } = msg;
       const { ports } = event;
-      console.log(`${CHANNEL_RENDER_PROVIDE_PORT} event processKeys`, processKeys);
-      processKeys.forEach((processKey: string, index: number) => {
+      this.logger.info(`${CHANNEL_RENDER_PROVIDE_PORT} event processKeys`, processKeys);
+      this.logger.info(`current process key is ${processKey}`);
+      this.processKey = processKey;
+      processKeys.forEach((processKey: TProcessKey, index: number) => {
         const messagePort = ports[index];
         this._registerProcessAndAddlistener(processKey, messagePort);
       });
@@ -71,7 +73,7 @@ class RenderIpc extends BaseIpc implements IRenderIpc {
      * 如果有其他渲染 ipc 注册进来，当前的渲染 ipc 需要将新加进来的 port 存储下来，并设置监听
      */
     ipcRenderer.on(CHANNEL_RENDER_ADD_PORT, (event, msg: IAddPortMsg) => {
-      console.log(`${CHANNEL_RENDER_ADD_PORT} event and msg`, msg);
+      this.logger.info(`${CHANNEL_RENDER_ADD_PORT} event and msg`, msg);
       const [port] = event.ports;
       const { processKey } = msg;
       this._registerProcessAndAddlistener(processKey, port);
@@ -81,7 +83,7 @@ class RenderIpc extends BaseIpc implements IRenderIpc {
   private _addlistenerRemovePort = (): void => {
     this.on(CHANNEL_RENDER_REMOVTE_PORT, (ctx, msg: IRemovePortMsg) => {
       const { processKey } = msg;
-      console.log(`receive Ipc.render.remove: ${processKey}`);
+      this.logger.info(`receive Ipc.render.remove: ${processKey}`);
       this._removeProcess(processKey);
     });
   };

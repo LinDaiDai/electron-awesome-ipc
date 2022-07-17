@@ -18,7 +18,14 @@ export interface IBaseIpc {
    * 命名空间
    */
   namespace: EIpcNamespace;
+  /**
+   * 当前进程的唯一标识
+   */
   processKey: TProcessKey;
+  /**
+   * 日志
+   */
+  logger: IIpcLogger;
   /**
    * 事件处理对象，用于处理进程内部自己的消息
    */
@@ -57,6 +64,34 @@ export interface IBaseIpc {
   removeListener: (channel: string, handler?: Function) => void;
 }
 
+export interface IBaseIpcProps {
+  /**
+   * 当前进程的唯一标识
+   */
+  processKey?: TProcessKey;
+  /**
+   * 自定义日志
+   */
+  logger?: TIpcLoggerProps;
+  /**
+   * 是否打印日志
+   */
+  hasLog?: boolean;
+}
+
+export type TIpcLoggerProps = Partial<IIpcLogger>;
+
+export interface IIpcLogger {
+  /**
+   * 普通日志
+   */
+  info: (...args: any[]) => void;
+  /**
+   * 报错日志
+   */
+  error: (...args: any[]) => void;
+}
+
 export type TProcessKey = string | number;
 export type TMessagePort = MessagePort | Electron.MessagePortMain;
 
@@ -91,10 +126,6 @@ export interface IPortChannelCallback {
   * 是否单次
   */
   once?: boolean;
-  /**
-  * 目标窗口(仅为保留字段，暂时无用)
-  */
-  target?: string;
 }
 
 export type TPortChannelHandler = (ctx: IIpcMessageCtx, body: any) => void;
