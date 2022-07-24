@@ -1,4 +1,4 @@
-import IpcRender from '../../core/ipc/render'
+import IpcRender from '../../../core/ipc/render'
 
 /**
  * 给渲染进程的全局变量中注册 ipc

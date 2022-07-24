@@ -1,4 +1,4 @@
-import { IBaseIpc } from '../core/ipc/typings';
+import { IBaseIpc } from '../../core/ipc/typings';
 
 declare global {
   interface Window {
