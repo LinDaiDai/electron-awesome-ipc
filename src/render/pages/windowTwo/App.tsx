@@ -11,8 +11,8 @@ function App() {
 
   return <div className='container'>
     <h1>WindowTwo</h1>
-    <button onClick={toggleShowTestIpc}>destory TestIpc Component</button>
     {!isDestoryTestIpc && <TestIpc /> }
+    <button onClick={toggleShowTestIpc}>{`${isDestoryTestIpc ? 'create' : 'destory'} TestIpc Component`}</button>
   </div>
 }
 

@@ -68,7 +68,7 @@ export interface IBaseIpcProps {
   /**
    * 当前进程的唯一标识
    */
-  processKey?: TProcessKey;
+  processKey: TProcessKey;
   /**
    * 自定义日志
    */
@@ -92,7 +92,7 @@ export interface IIpcLogger {
   error: (...args: any[]) => void;
 }
 
-export type TProcessKey = string | number;
+export type TProcessKey = string;
 export type TMessagePort = MessagePort | Electron.MessagePortMain;
 
 export interface IProcessMessagePortMap {

@@ -1,5 +1,1 @@
-import { attachIpc } from './ipc';
-
-attachIpc(window.lindaidai);
-
-export default window.lindaidai;
+export { attachIpc } from './ipc';

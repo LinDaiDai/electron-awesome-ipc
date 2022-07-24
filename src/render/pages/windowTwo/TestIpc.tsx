@@ -30,17 +30,31 @@ const TestIpc = () => {
           setTimeout(resolve, duration);
         });
       }
-      await sleep(17000);
+      await sleep(3000);
+
+      ctx.request.resolve('I am window-one-request-window-two result');
+    }
+    const handleWindowOneTimeoutRequestWindowTwo = async (ctx, params) => {
+      console.log('window-one-timeout-request-window-two params:', params);
+
+      const sleep = async (duration: number): Promise<void> => {
+        return new Promise(resolve => {
+          setTimeout(resolve, duration);
+        });
+      }
+      await sleep(5000);
 
       ctx.request.resolve('I am window-one-request-window-two result');
     }
     window.lindaidai.ipc?.on('main-send-window-two', handleMainSendWindowTwo);
     window.lindaidai.ipc?.on('window-one-send-winow-two', handleWindowOneSendWindowTwo);
     window.lindaidai.ipc?.on('window-one-request-window-two', handleWindowOneRequestWindowTwo);
+    window.lindaidai.ipc?.on('window-one-timeout-request-window-two', handleWindowOneTimeoutRequestWindowTwo);
     return () => {
       window.lindaidai.ipc?.off('main-send-window-two', handleMainSendWindowTwo);
       window.lindaidai.ipc?.off('window-one-send-winow-two', handleWindowOneSendWindowTwo);
       window.lindaidai.ipc?.removeListener('window-one-request-window-two', handleWindowOneRequestWindowTwo);
+      window.lindaidai.ipc?.removeListener('window-one-timeout-request-window-two', handleWindowOneTimeoutRequestWindowTwo);
     }
   }, []);
   return <>

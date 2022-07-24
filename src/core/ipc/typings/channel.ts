@@ -58,3 +58,12 @@ export interface IAddPortMsg {
 export interface IRemovePortMsg {
   processKey: TProcessKey;
 }
+
+export interface IRenderRegisterMsg {
+  processKey: TProcessKey;
+}
+
+export interface IRenderRegisterReturnValue {
+  success: boolean;
+  message?: string;
+}

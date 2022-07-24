@@ -12,8 +12,12 @@ const TestIpc = () => {
     console.log('requestMessageToMain result:', result);
   }
   const requestMessageToWindowTwo = async () => {
-    const result = await window.lindaidai.ipc?.request('window-one-request-window-two', 'infinite' ,{ data: 'I am windowOne params' });
+    const result = await window.lindaidai.ipc?.request('window-one-request-window-two', 15000 ,{ data: 'I am windowOne params' });
     console.log('requestMessageToWindowTwo result:', result);
+  }
+  const timeoutRequestMessageToWindowTwo = async () => {
+    const result = await window.lindaidai.ipc?.request('window-one-timeout-request-window-two', 3000 ,{ data: 'I am windowOne params' });
+    console.log('timeoutRequestMessageToWindowTwo result:', result);
   }
   useEffect(() => {
     const handleMainSendWindowOne = (ctx, data) => {
@@ -49,6 +53,7 @@ const TestIpc = () => {
     <button onClick={sendMessageToWindowTwo}>WindowOne send to WindowTwo</button>
     <button onClick={requestMessageToMain}>WindowOne request to Main</button>
     <button onClick={requestMessageToWindowTwo}>WindowOne request to WindowTwo</button>
+    <button onClick={timeoutRequestMessageToWindowTwo}>WindowOne timeout request to WindowTwo</button>
   </>
 }
 

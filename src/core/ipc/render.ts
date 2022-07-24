@@ -1,11 +1,10 @@
 const { ipcRenderer } = require('electron');
 import BaseIpc from './base';
-import { EIpcNamespace, IBaseIpcProps, IRenderIpc, TProcessKey, TMessagePort, IRequestResponse, IIpcMessage, IRemovePortMsg, IRenderProvidePortMsg, IAddPortMsg } from './typings';
-import { CHANNEL_RENDER_REGISTER, CHANNEL_REQUEST, PROCESS_KEY_MAIN, CHANNEL_RENDER_REMOVTE_PORT, CHANNEL_RENDER_PROVIDE_PORT, CHANNEL_RENDER_ADD_PORT } from './constants';
+import { EIpcNamespace, IBaseIpcProps, IRenderIpc, TProcessKey, TMessagePort, IRequestResponse, IIpcMessage, IRemovePortMsg, IRenderProvidePortMsg, IAddPortMsg, IRenderRegisterReturnValue } from './typings';
+import { CHANNEL_RENDER_REGISTER, CHANNEL_REQUEST, CHANNEL_RENDER_REMOVTE_PORT, CHANNEL_RENDER_PROVIDE_PORT, CHANNEL_RENDER_ADD_PORT } from './constants';
 
 class RenderIpc extends BaseIpc implements IRenderIpc {
   public namespace = EIpcNamespace.Render;
-  public processKey: TProcessKey = '';
   constructor(props: IBaseIpcProps) {
     super(props);
     this.init();
@@ -15,20 +14,23 @@ class RenderIpc extends BaseIpc implements IRenderIpc {
     this._registerIpcRenderToMain();
     this._addlistenerRenderProcessMessage();
     this._addlistenerRemovePort();
-  }
+  };
 
   /**
    * 将主进程的 port 添加进内存
    */
   private _registerIpcRenderToMain = (): void => {
-    const { port1, port2 } = new MessageChannel();
-    ipcRenderer.postMessage(CHANNEL_RENDER_REGISTER, null, [port2]);
-    this._registerProcessAndAddlistener(PROCESS_KEY_MAIN, port1);
+    const result: IRenderRegisterReturnValue = ipcRenderer.sendSync(CHANNEL_RENDER_REGISTER, { processKey: this.processKey });
+    if (!result.success) {
+      this.logger.error(result.message);
+      throw new Error(result.message);
+    }
+    this.logger.info('render ipc register success');
   };
 
   private _registerProcessAndAddlistener = (processKey: TProcessKey, messagePort: TMessagePort): void => {
     this._registerProcessIpcPort(processKey, messagePort);
-  this._addlistenerProcessMessage(messagePort);
+    this._addlistenerProcessMessage(messagePort);
   };
 
   private _registerProcessIpcPort = (processKey: TProcessKey, messagePort: TMessagePort): TProcessKey => {

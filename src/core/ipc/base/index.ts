@@ -1,7 +1,7 @@
 import IpcEventEmitter from './events';
 import { IBaseIpc, IBaseIpcProps, IIpcLogger, EIpcNamespace, IProcessMessagePortMap, IPortChannelMap, IHandleMessageParams, IIpcMessage, IPortChannelCallback, TPortChannelHandler, IIpcEventEmitter, IRequestResponse, TProcessKey } from '../typings';
 import { CHANNEL_REQUEST } from '../constants';
-import { generateMessageCtx, generateIpcMessage } from '../utils';
+import { generateMessageCtx, generateIpcMessage } from '../utils/message';
 import { timeoutWrap } from '../utils/timeout';
 
 export default class BaseIpc implements IBaseIpc {
@@ -9,13 +9,22 @@ export default class BaseIpc implements IBaseIpc {
   public processMessagePortMap: IProcessMessagePortMap = {};
   public portChannelMap: IPortChannelMap = {};
   public eventEmitter: IIpcEventEmitter = new IpcEventEmitter();
-  public init = (): void => {};
   public processKey: TProcessKey = '';
   public logger: IIpcLogger = { info: console.log, error: console.error };
 
   constructor(props: IBaseIpcProps) {
     this._initLogger(props);
+    this.initProcessKey(props.processKey);
   }
+
+  public initProcessKey = (processKey: TProcessKey): void => {
+    if (!processKey) {
+      const error = 'init render ipc error, process key is invalid';
+      this.logger.error(error);
+      throw new Error(error);
+    }
+    this.processKey = processKey;
+  };
 
   /**
    * 1、遍历现在已有的所有 ipc，并使用他们的 port 发送消息
@@ -97,7 +106,7 @@ export default class BaseIpc implements IBaseIpc {
     const { message } = params;
     const { channel, targetId } = message;
 
-    if ((targetId !== undefined || targetId !== null) && targetId !== this.processKey) {
+    if ((targetId !== undefined && targetId !== null && targetId !== '') && targetId !== this.processKey) {
       this.logger.info(`the targetId is mismatch, channel is ${channel}, targetId:`, targetId, this.processKey);
       return;
     }

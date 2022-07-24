@@ -1,15 +1,6 @@
-import { IProcessMessagePortMap, TProcessKey, IIpcMessageCtx, IRequestResponse, IHandleMessageParams, IIpcMessage } from '../typings';
+import { IIpcMessageCtx, IRequestResponse, IHandleMessageParams, IIpcMessage } from '../typings';
 import { CODE_RQUEST_SUCCESS } from '../constants';
 import { getUuid } from './uuid';
-
-export const getRenderProcessKey = (renderSender: Electron.webContents, processMessagePortMap: IProcessMessagePortMap): TProcessKey => {
-  const id = renderSender.id;
-  const hasValue = !!processMessagePortMap[id];
-  if (hasValue) {
-    throw new Error(`the id ${id} is already exists`);
-  }
-  return id;
-};
 
 export const generateMessageCtx = (params: IHandleMessageParams): IIpcMessageCtx => {
   const { message, resolveHandle } = params;
