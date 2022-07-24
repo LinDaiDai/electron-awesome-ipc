@@ -1,8 +1,11 @@
 {
-  "name": "electron-awesome-ipc",
-  "private": true,
+  "name": "electron-bbq-ipc",
   "version": "0.0.0",
-  "main": "dist/main/index.js",
+  "main": "dist/esm/index.js",
+  "module": "dist/esm/index.js",
+  "files": [
+    "dist/esm"
+  ],
   "scripts": {
     "dev": "npm run dev:all",
     "dev:all": "concurrently -n=render,main,preload -c=green,blue,yellow \"npm run dev:render\" \"npm run dev:main\" \"npm run dev:preload\"",
@@ -10,6 +13,8 @@
     "dev:main": "node -r ts-node/register script/build-main --mode=development",
     "dev:preload": "node -r ts-node/register script/build-preload --mode=development",
     "build": "tsc && vite build",
+    "build:esm": "rollup -c rollup.esm.config.js",
+    "postbuild:esm": "tsc --emitDeclarationOnly --declaration --project tsconfig.ipc.json --outDir dist/esm",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -30,14 +35,19 @@
     "chalk": "^4.1.0",
     "concurrently": "^7.2.2",
     "electron": "13.6.7",
+    "esbuild": "^0.14.49",
     "minimist": "^1.2.6",
     "nanoid": "^4.0.0",
     "ora": "^5.4.0",
     "rollup": "^2.75.7",
+    "rollup-plugin-esbuild": "^4.9.1",
     "rollup-plugin-typescript2": "^0.32.1",
     "rollup-plugin-uglify": "^6.0.4",
     "ts-node": "^10.8.2",
-    "typescript": "^4.6.3",
+    "typescript": "^4.7.4",
     "vite": "^2.9.9"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
   }
 }

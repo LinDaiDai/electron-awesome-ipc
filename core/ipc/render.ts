@@ -42,6 +42,7 @@ class RenderIpc extends BaseIpc implements IRenderIpc {
   };
 
   private _addlistenerProcessMessage = (messagePort: TMessagePort): void => {
+    // @ts-ignore
     messagePort.onmessage = (event: Electron.MessageEvent) => {
       const message: IIpcMessage = event.data;
       this.logger.info('[receive]', message);
@@ -95,4 +96,4 @@ class RenderIpc extends BaseIpc implements IRenderIpc {
   };
 }
 
-export default RenderIpc;
+export { RenderIpc };

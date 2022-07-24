@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "noImplicitAny": true,
+    "removeComments": true,
+    "preserveConstEnums": true,
+    "sourceMap": true
+  },
+  "include": [
+    "node_modules/electron/**/*",
+    "core/ipc/**/*"
+  ],
+  "exclude": [
+    "dist"
+  ]
+}

@@ -1,4 +1,4 @@
-import MainIpc from "../../../core/ipc/main";
+import { MainIpc } from "../../../dist/esm/main";
 
 export default async function setup() {
   console.log('setup main...');

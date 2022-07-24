@@ -54,6 +54,7 @@ class MainIpc extends BaseIpc implements IMainIpc {
   private _mainProcessAddlistenerProcessMessage = (processKey: TProcessKey): void => {
     const renderMessagePort = this.processMessagePortMap[processKey].messagePort;
     renderMessagePort?.start();
+    // @ts-ignore
     renderMessagePort?.on(CHANNEL_MESSAGE, (event) => {
       const message: IIpcMessage = event.data;
       this.logger.info('[receive]', message);
@@ -90,6 +91,7 @@ class MainIpc extends BaseIpc implements IMainIpc {
   };
 
   private _addListenerPortClose = (processKey: TProcessKey): void => {
+    // @ts-ignore
     this.processMessagePortMap[processKey].messagePort.on(CHANNEL_CLOSE, () => {
       this.logger.info('port will be close', processKey);
       this._removeProcessMessagePort(processKey);
@@ -102,4 +104,4 @@ class MainIpc extends BaseIpc implements IMainIpc {
   }
 }
 
-export default MainIpc;
+export { MainIpc };
